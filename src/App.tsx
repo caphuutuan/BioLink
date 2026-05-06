@@ -5,6 +5,7 @@
 
 import { useState, useEffect, FormEvent, MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { 
   Facebook, 
   Instagram, 
@@ -81,14 +82,9 @@ const INITIAL_PROFILE: ProfileInfo = {
 
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('user');
-  const [profile, setProfile] = useState<ProfileInfo>(() => {
-    const saved = localStorage.getItem('bioflow_profile');
-    return saved ? JSON.parse(saved) : INITIAL_PROFILE;
-  });
-  const [links, setLinks] = useState<LinkItem[]>(() => {
-    const saved = localStorage.getItem('bioflow_links');
-    return saved ? JSON.parse(saved) : INITIAL_LINKS;
-  });
+  const [profile, setProfile] = useState<ProfileInfo>(INITIAL_PROFILE);
+  const [links, setLinks] = useState<LinkItem[]>(INITIAL_LINKS);
+  const [isLoadingCloudData, setIsLoadingCloudData] = useState(true);
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -116,13 +112,81 @@ export default function App() {
     }, 3000);
   };
 
-  useEffect(() => {
-    localStorage.setItem('bioflow_links', JSON.stringify(links));
-  }, [links]);
+  const loadCloudData = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      setIsLoadingCloudData(false);
+      return;
+    }
+
+    try {
+      const [{ data: profileData, error: profileError }, { data: linksData, error: linksError }] = await Promise.all([
+        supabase.from('app_profile').select('avatar,name,description').eq('id', 1).maybeSingle(),
+        supabase.from('app_links').select('id,title,description,url,icon,type,sort_order').order('sort_order', { ascending: true }),
+      ]);
+
+      if (profileError) throw profileError;
+      if (linksError) throw linksError;
+
+      if (profileData) {
+        setProfile({
+          avatar: profileData.avatar || INITIAL_PROFILE.avatar,
+          name: profileData.name || INITIAL_PROFILE.name,
+          description: profileData.description || INITIAL_PROFILE.description,
+        });
+      }
+
+      if (linksData && linksData.length > 0) {
+        setLinks(
+          linksData.map((item) => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            url: item.url,
+            icon: item.icon as IconType,
+            type: item.type as 'button' | 'card',
+          })),
+        );
+      }
+    } catch {
+      showToast('Không thể tải dữ liệu từ cloud.', 'error');
+    } finally {
+      setIsLoadingCloudData(false);
+    }
+  };
+
+  const saveProfileToCloud = async (nextProfile: ProfileInfo) => {
+    if (!isSupabaseConfigured || !supabase) return;
+    const { error } = await supabase
+      .from('app_profile')
+      .upsert({ id: 1, ...nextProfile }, { onConflict: 'id' });
+    if (error) throw error;
+  };
+
+  const saveLinksToCloud = async (nextLinks: LinkItem[]) => {
+    if (!isSupabaseConfigured || !supabase) return;
+
+    const { error: deleteError } = await supabase.from('app_links').delete().neq('id', '');
+    if (deleteError) throw deleteError;
+
+    if (nextLinks.length === 0) return;
+
+    const payload = nextLinks.map((item, index) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description || '',
+      url: item.url,
+      icon: item.icon,
+      type: item.type,
+      sort_order: index,
+    }));
+
+    const { error: insertError } = await supabase.from('app_links').insert(payload);
+    if (insertError) throw insertError;
+  };
 
   useEffect(() => {
-    localStorage.setItem('bioflow_profile', JSON.stringify(profile));
-  }, [profile]);
+    loadCloudData();
+  }, []);
 
   useEffect(() => {
     if (!isAdminView) {
@@ -143,20 +207,26 @@ export default function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleAddLink = (e: FormEvent) => {
+  const handleAddLink = async (e: FormEvent) => {
     e.preventDefault();
     if (!newLink.title || !newLink.url) return;
 
     if (editingId) {
       // Update existing
-      setLinks(links.map(l => l.id === editingId ? {
+      const nextLinks = links.map(l => l.id === editingId ? {
         ...l,
         title: newLink.title!,
         description: newLink.description || '',
         url: newLink.url!,
         type: newLink.type as 'button' | 'card',
         icon: newLink.icon as IconType
-      } : l));
+      } : l);
+      setLinks(nextLinks);
+      try {
+        await saveLinksToCloud(nextLinks);
+      } catch {
+        showToast('Lưu dữ liệu cloud thất bại.', 'error');
+      }
       setEditingId(null);
       showToast('Đã cập nhật link thành công!');
     } else {
@@ -169,7 +239,13 @@ export default function App() {
         type: newLink.type as 'button' | 'card',
         icon: newLink.icon as IconType
       };
-      setLinks([link, ...links]);
+      const nextLinks = [link, ...links];
+      setLinks(nextLinks);
+      try {
+        await saveLinksToCloud(nextLinks);
+      } catch {
+        showToast('Lưu dữ liệu cloud thất bại.', 'error');
+      }
       showToast('Đã thêm link mới!');
     }
 
@@ -177,7 +253,7 @@ export default function App() {
     setIsAdding(false);
   };
 
-  const handleUpdateProfile = (e: FormEvent) => {
+  const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
 
     const nextProfile: ProfileInfo = {
@@ -187,7 +263,12 @@ export default function App() {
     };
 
     setProfile(nextProfile);
-    showToast('Đã cập nhật thông tin hồ sơ!');
+    try {
+      await saveProfileToCloud(nextProfile);
+      showToast('Đã cập nhật thông tin hồ sơ!');
+    } catch {
+      showToast('Lưu hồ sơ lên cloud thất bại.', 'error');
+    }
   };
 
   const startEdit = (link: LinkItem) => {
@@ -209,10 +290,16 @@ export default function App() {
     setPendingDeleteId(id);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!pendingDeleteId) return;
 
-    setLinks(prev => prev.filter(l => l.id !== pendingDeleteId));
+    const nextLinks = links.filter(l => l.id !== pendingDeleteId);
+    setLinks(nextLinks);
+    try {
+      await saveLinksToCloud(nextLinks);
+    } catch {
+      showToast('Lưu dữ liệu cloud thất bại.', 'error');
+    }
     if (editingId === pendingDeleteId) resetForm();
     setPendingDeleteId(null);
     showToast('Đã xóa link!', 'error');
@@ -231,6 +318,18 @@ export default function App() {
       <div className="pointer-events-none absolute inset-0 flex justify-center">
         <div className="w-full max-w-3xl my-2 rounded-[24px] border border-white/70 bg-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:my-4 sm:rounded-[32px]" />
       </div>
+
+      {!isSupabaseConfigured && (
+        <div className="relative z-20 w-full max-w-lg mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Chưa cấu hình Supabase. Hãy thêm `VITE_SUPABASE_URL` và `VITE_SUPABASE_ANON_KEY` trong `.env`.
+        </div>
+      )}
+
+      {isLoadingCloudData && (
+        <div className="relative z-20 w-full max-w-lg mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          Đang đồng bộ dữ liệu từ cloud...
+        </div>
+      )}
 
       {isAdminView && (
         <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-30">
