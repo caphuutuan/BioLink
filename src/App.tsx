@@ -228,6 +228,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 relative">
+      <div className="pointer-events-none absolute inset-0 flex justify-center">
+        <div className="w-full max-w-2xl my-4 rounded-[32px] border border-white/70 bg-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm" />
+      </div>
+
       {isAdminView && (
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30">
           <button
@@ -244,7 +248,7 @@ export default function App() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center text-center mb-10 w-full max-w-md"
+        className="relative z-10 flex flex-col items-center text-center mb-10 w-full max-w-md"
       >
         <div className="relative mb-6">
           <img 
@@ -269,7 +273,7 @@ export default function App() {
         </p>
       </motion.div>
 
-      <div className="w-full max-w-md flex items-center justify-center mb-6">
+      <div className="relative z-10 w-full max-w-md flex items-center justify-center mb-6">
         <div className="inline-flex p-1 bg-white rounded-full border border-gray-200 shadow-sm">
           <button
             type="button"
@@ -294,7 +298,7 @@ export default function App() {
 
       {/* Action Buttons */}
       {isAdminView && (
-        <div className="w-full max-w-md flex justify-center mb-8">
+        <div className="relative z-10 w-full max-w-md flex justify-center mb-8">
           <button
             onClick={isAdding ? resetForm : () => setIsAdding(true)}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
@@ -406,7 +410,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Links List */}
-      <div className="w-full max-w-md space-y-4 mb-20 px-1">
+      <div className="relative z-10 w-full max-w-md space-y-4 mb-20 px-1">
         <AnimatePresence mode="popLayout">
           {links.map((link) => {
             const IconComponent = getIconComponent(link.icon);
@@ -602,7 +606,7 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className="mt-auto py-8 text-center">
+      <footer className="relative z-10 mt-auto py-8 text-center">
         <p className="text-xs text-gray-400 font-medium tracking-widest uppercase">
           Powered by BioFlow
         </p>
