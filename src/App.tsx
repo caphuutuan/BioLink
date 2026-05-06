@@ -227,17 +227,17 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 relative">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-3 sm:px-6 sm:py-10 md:py-12 relative">
       <div className="pointer-events-none absolute inset-0 flex justify-center">
-        <div className="w-full max-w-2xl my-4 rounded-[32px] border border-white/70 bg-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm" />
+        <div className="w-full max-w-3xl my-2 rounded-[24px] border border-white/70 bg-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:my-4 sm:rounded-[32px]" />
       </div>
 
       {isAdminView && (
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-30">
+        <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-30">
           <button
             type="button"
             onClick={() => setIsProfileModalOpen(true)}
-            className="px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-full text-sm font-semibold hover:border-brand-accent hover:text-brand-accent transition-colors shadow-sm"
+            className="px-3 py-2 bg-white text-gray-700 border border-gray-200 rounded-full text-xs font-semibold hover:border-brand-accent hover:text-brand-accent transition-colors shadow-sm sm:px-4 sm:text-sm"
           >
             Sửa thông tin
           </button>
@@ -248,13 +248,13 @@ export default function App() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 flex flex-col items-center text-center mb-10 w-full max-w-md"
+        className="relative z-10 flex flex-col items-center text-center mb-8 w-full max-w-lg pt-10 sm:mb-10 sm:pt-0"
       >
         <div className="relative mb-6">
           <img 
             src={profile.avatar}
             alt="Profile" 
-            className="w-24 h-24 rounded-full border-4 border-white shadow-xl object-cover"
+            className="w-20 h-20 rounded-full border-4 border-white shadow-xl object-cover sm:w-24 sm:h-24"
             referrerPolicy="no-referrer"
           />
           <motion.button
@@ -267,18 +267,18 @@ export default function App() {
           </motion.button>
         </div>
         
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{profile.name}</h1>
-        <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-[280px]">
+        <h1 className="text-xl font-bold text-gray-900 mb-2 sm:text-2xl">{profile.name}</h1>
+        <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-[320px] sm:max-w-[380px]">
           {profile.description}
         </p>
       </motion.div>
 
-      <div className="relative z-10 w-full max-w-md flex items-center justify-center mb-6">
-        <div className="inline-flex p-1 bg-white rounded-full border border-gray-200 shadow-sm">
+      <div className="relative z-10 w-full max-w-lg flex items-center justify-center mb-6">
+        <div className="inline-flex w-full max-w-xs p-1 bg-white rounded-full border border-gray-200 shadow-sm sm:w-auto sm:max-w-none">
           <button
             type="button"
             onClick={() => setViewMode('user')}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors sm:flex-none ${
               !isAdminView ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -287,7 +287,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setViewMode('admin')}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
+            className={`flex-1 px-4 py-2 rounded-full text-sm font-semibold transition-colors sm:flex-none ${
               isAdminView ? 'bg-gray-900 text-white' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -298,10 +298,10 @@ export default function App() {
 
       {/* Action Buttons */}
       {isAdminView && (
-        <div className="relative z-10 w-full max-w-md flex justify-center mb-8">
+        <div className="relative z-10 w-full max-w-lg flex justify-center mb-8">
           <button
             onClick={isAdding ? resetForm : () => setIsAdding(true)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
+            className={`w-full max-w-xs flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold transition-all shadow-sm ${
               isAdding 
               ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
               : 'bg-brand-primary text-white hover:bg-gray-800'
@@ -320,9 +320,9 @@ export default function App() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="w-full max-w-md mb-8 overflow-hidden"
+            className="w-full max-w-lg mb-8 overflow-hidden"
           >
-            <form onSubmit={handleAddLink} className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 space-y-4">
+            <form onSubmit={handleAddLink} className="bg-white p-4 rounded-2xl shadow-md border border-gray-100 space-y-4 sm:p-6">
               <h2 className="font-bold text-gray-800 text-lg mb-2 flex items-center gap-2">
                 <Plus size={20} className="text-brand-accent" />
                 Thêm Link mới
@@ -355,7 +355,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Kiểu hiển thị</label>
                   <select 
@@ -410,7 +410,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Links List */}
-      <div className="relative z-10 w-full max-w-md space-y-4 mb-20 px-1">
+      <div className="relative z-10 w-full max-w-lg space-y-4 mb-16 px-0.5 sm:mb-20 sm:px-1">
         <AnimatePresence mode="popLayout">
           {links.map((link) => {
             const IconComponent = getIconComponent(link.icon);
@@ -431,7 +431,7 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     onSubmit={handleAddLink} 
-                    className="bg-white p-5 rounded-2xl shadow-lg border-2 border-brand-accent space-y-4"
+                    className="bg-white p-4 rounded-2xl shadow-lg border-2 border-brand-accent space-y-4 sm:p-5"
                   >
                     <div className="flex justify-between items-center mb-2">
                        <h3 className="font-bold text-gray-800">Chỉnh sửa Link</h3>
@@ -466,7 +466,7 @@ export default function App() {
                       </div>
                       
                       {/* Cấu hình hiển thị và Icon */}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1 font-sans">Kiểu hiển thị</label>
                           <select 
@@ -557,7 +557,7 @@ export default function App() {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group/item block p-5 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-brand-accent/40 hover:shadow-md transition-all"
+                        className="group/item block p-4 bg-white rounded-2xl shadow-sm border border-gray-100 hover:border-brand-accent/40 hover:shadow-md transition-all sm:p-5"
                       >
                         <div className="flex items-start gap-4">
                           <div className="p-3 bg-blue-50 text-brand-accent rounded-xl group-hover/item:bg-brand-accent group-hover/item:text-white transition-colors">
@@ -581,7 +581,7 @@ export default function App() {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group/item flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-gray-100 font-semibold text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all"
+                        className="group/item flex items-center justify-between gap-2 p-3.5 bg-white rounded-2xl shadow-sm border border-gray-100 font-semibold text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all sm:p-4"
                       >
                         <div className="flex items-center gap-3">
                           <IconComponent size={18} />
@@ -613,7 +613,7 @@ export default function App() {
       </footer>
 
       {/* Toast Notifications */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-[280px]">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-[calc(100%-24px)] max-w-[320px] sm:bottom-6 sm:max-w-[280px]">
         <AnimatePresence>
           {toasts.map(toast => (
             <motion.div
@@ -644,7 +644,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-3 sm:p-4"
             onClick={() => setIsProfileModalOpen(false)}
           >
             <motion.form
@@ -655,7 +655,7 @@ export default function App() {
                 handleUpdateProfile(e);
                 setIsProfileModalOpen(false);
               }}
-              className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 border border-gray-100 space-y-4"
+              className="w-full max-w-md max-h-[85vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-4 border border-gray-100 space-y-4 sm:p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -725,14 +725,14 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-3 sm:p-4"
             onClick={cancelDelete}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 8 }}
-              className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-5"
+              className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-4 sm:p-5"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa</h3>
