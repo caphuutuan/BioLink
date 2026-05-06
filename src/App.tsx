@@ -39,6 +39,14 @@ interface LinkItem {
   type: 'button' | 'card';
 }
 
+interface LinkFormState {
+  title: string;
+  description: string;
+  url: string;
+  icon: IconType;
+  type: 'button' | 'card';
+}
+
 interface ProfileInfo {
   avatar: string;
   name: string;
@@ -80,6 +88,14 @@ const INITIAL_PROFILE: ProfileInfo = {
   description: 'Quản lý link affiliate và mạng xã hội của bạn một cách chuyên nghiệp.'
 };
 
+const EMPTY_LINK_FORM: LinkFormState = {
+  title: '',
+  description: '',
+  url: '',
+  type: 'card',
+  icon: 'affiliate',
+};
+
 export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('user');
   const [profile, setProfile] = useState<ProfileInfo>(INITIAL_PROFILE);
@@ -96,13 +112,7 @@ export default function App() {
   const [profileForm, setProfileForm] = useState<ProfileInfo>(profile);
   
   // Form State
-  const [newLink, setNewLink] = useState<Partial<LinkItem>>({
-    title: '',
-    description: '',
-    url: '',
-    type: 'card',
-    icon: 'affiliate'
-  });
+  const [newLink, setNewLink] = useState<LinkFormState>(EMPTY_LINK_FORM);
 
   const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     const id = Date.now().toString();
@@ -209,17 +219,17 @@ export default function App() {
 
   const handleAddLink = async (e: FormEvent) => {
     e.preventDefault();
-    if (!newLink.title || !newLink.url) return;
+    if (!newLink.title.trim() || !newLink.url.trim()) return;
 
     if (editingId) {
       // Update existing
       const nextLinks = links.map(l => l.id === editingId ? {
         ...l,
-        title: newLink.title!,
+        title: newLink.title,
         description: newLink.description || '',
-        url: newLink.url!,
-        type: newLink.type as 'button' | 'card',
-        icon: newLink.icon as IconType
+        url: newLink.url,
+        type: newLink.type,
+        icon: newLink.icon
       } : l);
       setLinks(nextLinks);
       try {
@@ -233,11 +243,11 @@ export default function App() {
       // Add new
       const link: LinkItem = {
         id: Date.now().toString(),
-        title: newLink.title!,
+        title: newLink.title,
         description: newLink.description || '',
-        url: newLink.url!,
-        type: newLink.type as 'button' | 'card',
-        icon: newLink.icon as IconType
+        url: newLink.url,
+        type: newLink.type,
+        icon: newLink.icon
       };
       const nextLinks = [link, ...links];
       setLinks(nextLinks);
@@ -249,7 +259,7 @@ export default function App() {
       showToast('Đã thêm link mới!');
     }
 
-    setNewLink({ title: '', description: '', url: '', type: 'card', icon: 'affiliate' });
+    setNewLink(EMPTY_LINK_FORM);
     setIsAdding(false);
   };
 
@@ -272,14 +282,20 @@ export default function App() {
   };
 
   const startEdit = (link: LinkItem) => {
-    setNewLink(link);
+    setNewLink({
+      title: link.title,
+      description: link.description || '',
+      url: link.url,
+      type: link.type,
+      icon: link.icon,
+    });
     setEditingId(link.id);
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetForm = () => {
-    setNewLink({ title: '', description: '', url: '', type: 'card', icon: 'affiliate' });
+    setNewLink(EMPTY_LINK_FORM);
     setEditingId(null);
     setIsAdding(false);
   };
@@ -315,8 +331,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-3 sm:px-6 sm:py-10 md:py-12 relative">
-      <div className="pointer-events-none absolute inset-0 flex justify-center">
-        <div className="w-full max-w-3xl my-2 rounded-[24px] border border-white/70 bg-white/70 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:my-4 sm:rounded-[32px]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 flex justify-center px-2 sm:px-4">
+        <div className="w-full max-w-3xl my-2 rounded-[24px] border border-gray-200/80 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.10)] sm:my-4 sm:rounded-[32px]" />
       </div>
 
       {!isSupabaseConfigured && (
@@ -419,7 +435,7 @@ export default function App() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="w-full max-w-lg mb-8 overflow-hidden"
+            className="relative z-10 w-full max-w-lg mb-8 overflow-hidden"
           >
             <form onSubmit={handleAddLink} className="bg-white p-4 rounded-2xl shadow-md border border-gray-100 space-y-4 sm:p-6">
               <h2 className="font-bold text-gray-800 text-lg mb-2 flex items-center gap-2">
